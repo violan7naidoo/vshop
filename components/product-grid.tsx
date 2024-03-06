@@ -2,8 +2,10 @@
 
 import Image from "next/image"
 import Link from "next/link"
+import { client } from "@/sanity/lib/client"
 import { urlForImage } from "@/sanity/lib/image"
 import { XCircle } from "lucide-react"
+import { groq } from "next-sanity"
 import { formatCurrencyString } from "use-shopping-cart"
 
 import { SanityProduct } from "@/config/inventory"
@@ -65,4 +67,28 @@ export function ProductGrid({ products }: Props) {
       ))}
     </div>
   )
+}
+
+export async function getStaticProps() {
+  // Your data-fetching logic remains the same
+  const products = await client.fetch<SanityProduct[]>(
+    groq`* [_type == "product"]{
+    _id,
+    _createdAt,
+    name,
+    sku,
+    images,
+    currency,
+    price,
+    description,
+    "slug": slug.current
+    }`
+  ) // Replace with your actual data-fetching function
+
+  return {
+    props: {
+      products,
+    },
+    revalidate: 60, // Set revalidation interval in seconds (adjust based on your needs)
+  }
 }
